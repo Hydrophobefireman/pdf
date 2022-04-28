@@ -45,5 +45,9 @@ export default async (request: VercelRequest, response: VercelResponse) => {
   await page.goto(url, {waitUntil: "networkidle2"});
   const resp = await page.pdf({format});
   response.setHeader("content-type", "application/pdf");
+  response.setHeader(
+    "cache-control",
+    "Cache-Control: s-maxage=100, stale-while-revalidate=200"
+  );
   return response.send(resp);
 };
