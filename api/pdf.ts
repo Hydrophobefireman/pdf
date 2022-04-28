@@ -1,4 +1,5 @@
-import pptr, {PaperFormat} from "puppeteer";
+import chrome from "chrome-aws-lambda";
+import pptr, {PaperFormat} from "puppeteer-core";
 
 import type {VercelRequest, VercelResponse} from "@vercel/node";
 
@@ -32,7 +33,14 @@ export default async (request: VercelRequest, response: VercelResponse) => {
   } catch (e) {
     return response.send({error: "invalid url"});
   }
-  const browser = await pptr.launch({});
+  const options = process.env.AWS_REGION
+    ? {
+        args: chrome.args,
+        executablePath: await chrome.executablePath,
+        headless: chrome.headless,
+      }
+    : {};
+  const browser = await pptr.launch(options);
   const page = await browser.newPage();
   await page.goto(url, {waitUntil: "networkidle2"});
   const resp = await page.pdf({format});
