@@ -26,6 +26,7 @@ export default async (request: VercelRequest, response: VercelResponse) => {
     url,
     format = "a3",
     cacheControl = "s-maxage=100, stale-while-revalidate=200",
+    encodedOptions,
   } = request.query;
   url = str(url);
   format = str(format);
@@ -47,7 +48,10 @@ export default async (request: VercelRequest, response: VercelResponse) => {
   const browser = await pptr.launch(options);
   const page = await browser.newPage();
   await page.goto(url, {waitUntil: "networkidle2"});
-  const resp = await page.pdf({format});
+  const resp = await page.pdf({
+    format,
+    ...(encodedOptions ? JSON.parse(encodedOptions as string) : {}),
+  });
   response.setHeader("content-type", "application/pdf");
   response.setHeader("cache-control", cacheControl);
   return response.send(resp);
